@@ -8,5 +8,8 @@ return [
     'create' => [
         'title' => 'Thêm mới thành viên'
     ],
+    'delete' => [
+        'title' => 'Xoá thành viên'
+    ],
 
 ];

@@ -14,4 +14,11 @@ class Ward extends Model
     ];
 
     protected $table = 'wards';
+    protected $primaryKey = 'code';
+    public $incrementing = false;
+
+
+    public function districts(){
+        return $this->beLongsTo(District::class, 'district_code', 'code');
+    }
 }

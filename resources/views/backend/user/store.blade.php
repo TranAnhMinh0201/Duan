@@ -1,6 +1,18 @@
 @include('backend.dashboard.com.breadcrumb', ['title' => $config['seo']['create']['title']])
-
-<form action="" method="" class="box">
+@if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+@php
+    $url = ($config['method'] == 'create') ? route('user.store') : route('user.update', $user->id);
+@endphp
+<form action="{{ $url }}" method="post" class="box">
+    @csrf
     <div class="wrapper wrapper-content animated fadeInRight">
         <div class="row">
             <div class="col-lg-5">
@@ -12,16 +24,26 @@
             <div class="col-lg-7">
                 <div class="ibox">
                     <div class="ibox-content">
+                        @php
+                            $userCatalogue = [
+                                '[Chọn nhóm thành viên]',
+                                'Quản trị viên',
+                                'Cộng tác viên'
+                            ];
+                        @endphp
                         <div class="row mb15">
                             <div class="col-lg-6">
                                 <div class="form-row">
-                                    <label for="" class="control-label text-left">Nhóm thành viên
+                                    <label for="" class="control-label text-left">Nhóm Thành viên 
                                         <span class="text-danger">(*)</span>
                                     </label>
-                                    <select name="user_catalogue_id" class="form-control">
-                                        <option value="0">[Chọn Nhóm Thành Viên]</option>
-                                        <option value="1">Quản trị viên</option>
-                                        <option value="2">Cộng tác viên</option>
+                                    <select name="user_catalogue_id" class="form-control setupSelect2">
+                                        @foreach($userCatalogue as $key => $item)
+                                            <option 
+                                                {{ $key == old('user_catalogue_id', (isset($user->user_catalogue_id)) ? $user->user_catalogue_id : '') ? 'selected' : '' }} 
+                                                value="{{ $key }}">{{ $item }}
+                                            </option>
+                                        @endforeach
                                     </select>
                                 </div>
                             </div>
@@ -33,7 +55,7 @@
                                     <input 
                                         type="text"
                                         name="email"
-                                        value=""
+                                        value="{{ old('email', ($user->email) ?? '' ) }}"
                                         class="form-control"
                                         placeholder=""
                                         autocomplete="off">
@@ -49,7 +71,7 @@
                                     <input 
                                         type="text"
                                         name="name"
-                                        value=""
+                                        value="{{ old('name', ($user->name) ?? '') }}"
                                         class="form-control"
                                         placeholder=""
                                         autocomplete="off">
@@ -63,13 +85,14 @@
                                     <input 
                                         type="date"
                                         name="birthday"
-                                        value=""
+                                        value="{{ old('birthday', isset($user->birthday) ? date('Y-m-d', strtotime($user->birthday)) : '' ) }}"
                                         class="form-control"
                                         placeholder=""
                                         autocomplete="off">
                                 </div>
                             </div>
                         </div>
+                        @if($config['method'] == 'create')
                         <div class="row mb15">
                             <div class="col-lg-6">
                                 <div class="form-row">
@@ -100,6 +123,7 @@
                                 </div>
                             </div>
                         </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -120,11 +144,12 @@
                                 <div class="form-row">
                                     <label for="" class="control-label text-left">Thành phố
                                     </label>
-                                    <select name="province_id" class="form-control setupSelect2 province">
+                                    <select name="province_id" class="form-control setupSelect2 province location" data-target="districts">
                                         <option value="0">[Chọn thành phố]</option>
                                         @if(isset($provinces))
                                             @foreach($provinces as $province)
-                                            <option value="{{ $province->code }}">{{ $province->name }}</option>
+                                            <option @if(old('province_id') == $province->code) selected @endif 
+                                                value="{{ $province->code }}">{{ $province->name }}</option>
                                             @endforeach
                                         @endif
                                     </select>
@@ -134,7 +159,7 @@
                                 <div class="form-row">
                                     <label for="" class="control-label text-left">Quận/Huyện
                                     </label>
-                                    <select name="district_id" class="form-control setupSelect2 districts">
+                                    <select name="district_id" class="form-control setupSelect2 districts location" data-target="wards">
                                         <option value="0">[Chọn Quận/Huyện]</option>
                                     </select>
                                 </div>
@@ -145,7 +170,7 @@
                                 <div class="form-row">
                                     <label for="" class="control-label text-left">Phường/Xã
                                     </label>
-                                    <select name="ward_id" class="form-control">
+                                    <select name="ward_id" class="form-control setupSelect2 wards">
                                         <option value="0">[Chọn Phường/Xã]</option>
                                     </select>
                                 </div>
@@ -157,7 +182,7 @@
                                     <input 
                                         type="text"
                                         name="address"
-                                        value=""
+                                        value="{{ old('address', ($user->address) ?? '') }}"
                                         class="form-control"
                                         placeholder=""
                                         autocomplete="off">
@@ -172,7 +197,7 @@
                                     <input 
                                         type="phoneNumber"
                                         name="phone"
-                                        value=""
+                                        value="{{ old('phone', ($user->phone) ?? '') }}"
                                         class="form-control"
                                         placeholder=""
                                         autocomplete="off">
@@ -185,7 +210,7 @@
                                     <input 
                                         type="text"
                                         name="description"
-                                        value=""
+                                        value="{{ old('description', ($user->description) ?? '') }}"
                                         class="form-control"
                                         placeholder=""
                                         autocomplete="off">
@@ -202,3 +227,9 @@
         </div>
     </div>
 </form>
+
+<script>
+    var province_id = '{{ (isset($user->province_id)) ? $user->province_id : old('province_id') }}'
+    var district_id = '{{ (isset($user->district_id)) ? $user->district_id : old('district_id') }}'
+    var ward_id = '{{ (isset($user->ward_id)) ? $user->ward_id : old('ward_id') }}'
+</script>

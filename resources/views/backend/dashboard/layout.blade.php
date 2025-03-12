@@ -3,7 +3,7 @@
     <head>
         @include('backend.dashboard.com.head')
     </head>
-
+    
     <body>
         <div id="wrapper">
             @include('backend.dashboard.com.sidebar')
